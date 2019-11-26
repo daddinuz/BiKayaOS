@@ -31,7 +31,7 @@ Install uARM emulator
 ```bash
 cd ./emulators
 git clone https://github.com/mellotanica/uARM.git
-cd uArm
+cd uARM
 ./compile
 ./install.sh
 ```
