@@ -3,36 +3,35 @@
 ## Requirements
 
 Install Git
-`bash
+```bash
 sudo apt install git
-`
+```
 
 Install compilers for our architectures
-`bash
+```bash
 sudo apt install build-essential gcc-arm-none-eabi gcc-mipsel-linux-gnu
-`
+```
 
 Install Qt
-`bash
+```bash
 sudo apt install qt5-default
-`
+```
 
 Install elf utilities
-`bash
+```bash
 sudo apt install libelf1 libelf-dev
-`
+```
 
 Install boost libraries
-`bash
+```bash
 sudo apt install libboost-all-dev
-`
+```
 
 Install uARM emulator
-`bash
+```bash
 cd ./emulators
 git clone https://github.com/mellotanica/uARM.git
 cd uArm
 ./compile
 ./install.sh
-`
-
+```
