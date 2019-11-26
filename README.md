@@ -27,6 +27,11 @@ Install boost libraries
 sudo apt install libboost-all-dev
 ```
 
+Install libsigc++ 
+```bash
+sudo apt install libsigc++-2.0-dev 
+```
+
 Install uARM emulator
 ```bash
 cd ./emulators
@@ -34,4 +39,11 @@ git clone https://github.com/mellotanica/uARM.git
 cd uARM
 ./compile
 ./install.sh
+cd ..
+```
+
+Install uMPS2 emulator
+```bash
+git clone https://github.com/tjonjic/umps.git
+cd umps
 ```
