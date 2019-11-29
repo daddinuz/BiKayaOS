@@ -38,7 +38,7 @@ cd emulators
 git clone https://github.com/mellotanica/uARM.git
 cd uARM
 ./compile
-./install.sh
+sudo ./install.sh
 cd ..
 ```
 
