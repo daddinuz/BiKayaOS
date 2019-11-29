@@ -34,7 +34,7 @@ sudo apt install libsigc++-2.0-dev
 
 Install uARM emulator
 ```bash
-cd ./emulators
+cd emulators
 git clone https://github.com/mellotanica/uARM.git
 cd uARM
 ./compile
@@ -46,4 +46,12 @@ Install uMPS2 emulator
 ```bash
 git clone https://github.com/tjonjic/umps.git
 cd umps
+libtoolize --force
+aclocal
+autoreconf -vfi
+automake --force-missing --add-missing
+autoconf
+./configure --enable-mantainer-mode --with-mips-tool-prefix=mipsel-linux-gnu-
+make
+sudo make install
 ```
