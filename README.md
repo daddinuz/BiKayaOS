@@ -1,6 +1,6 @@
 # BiKaya OS - OS Course project @ University of Bologna 2019
 
-## Requirements
+## Requirements (based on Ubuntu 18.04)
 
 Install Git
 ```bash
@@ -14,7 +14,7 @@ sudo apt install build-essential gcc-arm-none-eabi gcc-mipsel-linux-gnu
 
 Install Qt
 ```bash
-sudo apt install qt5-default
+sudo apt install qt5-default qt4-qmake qt4-dev-tools
 ```
 
 Install elf utilities
@@ -46,12 +46,8 @@ Install uMPS2 emulator
 ```bash
 git clone https://github.com/tjonjic/umps.git
 cd umps
-libtoolize --force
-aclocal
 autoreconf -vfi
-automake --force-missing --add-missing
-autoconf
-./configure --enable-mantainer-mode --with-mips-tool-prefix=mipsel-linux-gnu-
+QT_SELECT=qt4 ./configure --enable-maintainer-mode --with-mips-tool-prefix=mipsel-linux-gnu-
 make
 sudo make install
 ```
