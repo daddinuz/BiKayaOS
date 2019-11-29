@@ -44,6 +44,7 @@ cd ..
 
 Install uMPS2 emulator
 ```bash
+sudo apt install git libtool m4 automake autotools-dev autoconf
 git clone https://github.com/tjonjic/umps.git
 cd umps
 autoreconf -vfi
