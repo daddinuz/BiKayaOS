@@ -7,9 +7,9 @@ Install Git
 sudo apt install git
 ```
 
-Install compilers for our architectures
+Install compilers and build tools for our architectures
 ```bash
-sudo apt install build-essential gcc-arm-none-eabi gcc-mipsel-linux-gnu
+sudo apt install build-essential cmake libtool m4 automake autotools-dev autoconf gcc-arm-none-eabi gcc-mipsel-linux-gnu
 ```
 
 Install Qt
@@ -27,9 +27,9 @@ Install boost libraries
 sudo apt install libboost-all-dev
 ```
 
-Install libsigc++ 
+Install libsigc++
 ```bash
-sudo apt install libsigc++-2.0-dev 
+sudo apt install libsigc++-2.0-dev
 ```
 
 Install uARM emulator
@@ -44,11 +44,41 @@ cd ..
 
 Install uMPS2 emulator
 ```bash
-sudo apt install git libtool m4 automake autotools-dev autoconf
 git clone https://github.com/tjonjic/umps.git
 cd umps
 autoreconf -vfi
 QT_SELECT=qt4 ./configure --enable-maintainer-mode --with-mips-tool-prefix=mipsel-linux-gnu-
 make
 sudo make install
+```
+
+## Building
+
+#### uARM targets
+
+At the root of the project:
+
+```bash
+cd build/uarm/debug
+cmake -DTARGET_ARCH=uARM ../../..
+make
+```
+
+#### uMPS targets
+
+At the root of the project:
+
+```bash
+cd build/umps/debug
+cmake -DTARGET_ARCH=uMPS ../../..
+make
+```
+
+## Setup default printers
+
+At the root of the project:
+
+```bash
+touch emulators/config/uarm/printer0.uarm
+touch emulators/config/umps/printer0.umps
 ```

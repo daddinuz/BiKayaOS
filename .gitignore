@@ -44,7 +44,6 @@ CTestTestfile.cmake
 bin/*
 !lib/.keep
 lib/*
-build/
 coverage/
 cmake-build-*/
 
@@ -54,3 +53,10 @@ cmake-build-*/
 # emulators
 emulators/*
 !emulators/.gitkeep
+
+# building
+build/uarm/debug/*
+!build/uarm/debug/.gitkeep
+
+build/umps/debug/*
+!build/umps/debug/.gitkeep
