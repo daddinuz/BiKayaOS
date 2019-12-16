@@ -1,5 +1,5 @@
-#include <system.h>
-#include <term.h>
+#include <bikaya/system.h>
+#include <bikaya/term.h>
 
 #define STATUS_READY        1U
 #define STATUS_BUSY         3U

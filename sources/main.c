@@ -1,5 +1,5 @@
-#include <printer.h>
-#include <term.h>
+#include <bikaya/printer.h>
+#include <bikaya/term.h>
 
 int main(void) {
     int c;
