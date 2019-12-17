@@ -6,6 +6,6 @@ include_directories(${ARCHIVE_INCLUDE})
 
 add_library(${ARCHIVE_NAME}
   ${ARCHIVE_SOURCES}/term.c
-  ${ARCHIVE_SOURCES}/types.c
   ${ARCHIVE_SOURCES}/printer.c
+  ${ARCHIVE_SOURCES}/primitive_types.c
 )

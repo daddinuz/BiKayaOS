@@ -11,3 +11,7 @@
 #else
 #error "Unknown arch"
 #endif
+
+#if !defined(NULL)
+#define NULL ((void *) 0)
+#endif

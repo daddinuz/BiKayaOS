@@ -1,7 +1,9 @@
 #pragma once
 
-// boolean type
+// boolean type and consts
 typedef _Bool bool;
+#define true     1
+#define false    0
 
 // 8-bits integer types
 typedef unsigned char u8;
