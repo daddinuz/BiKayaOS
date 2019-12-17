@@ -16,7 +16,7 @@ include_directories(${UMPS_INCLUDE_PATH})
 
 # C compiler setup
 set(CMAKE_C_COMPILER mipsel-linux-gnu-gcc)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-pic -mips1 -mabi=32 -mfp32 -mno-gpopt -G 0")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-pic -mips1 -mabi=32 -mfp32 -mno-gpopt -G 0 -nostdlib")
 
 # WARN: this hack is needed to change the underlying linker
 set(CMAKE_LINKER mipsel-linux-gnu-ld)

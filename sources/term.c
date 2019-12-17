@@ -9,42 +9,50 @@
 #define CMD_TRANSMIT        2U
 #define CMD_RECEIVE         2U
 
-#define CHAR_OFFSET         8U
-#define TERM_STATUS_MASK    0xFFU
+#define BYTE_OFFSET         8U
+#define BYTE_MASK           0xFFU
 
 static termreg_t *term0 = (termreg_t *) DEV_REG_ADDR(IL_TERMINAL, 0);
 
 static inline unsigned term_transmit_status(const termreg_t *const tp) {
-    return tp->transm_status & TERM_STATUS_MASK;
+    return tp->transm_status & BYTE_MASK;
 }
 
 static inline unsigned term_receive_status(const termreg_t *const tp) {
-    return tp->recv_status & TERM_STATUS_MASK;
+    return tp->recv_status & BYTE_MASK;
 }
 
-int term_putchar(const char c) {
+bool term_putchar(const char character) {
     unsigned status = term_transmit_status(term0);
 
     if (STATUS_READY != status) {
-        return -1;
+        return false;
     }
 
-    term0->transm_command = ((((unsigned) c) << CHAR_OFFSET) | CMD_TRANSMIT);
+    term0->transm_command = (((unsigned) character) << BYTE_OFFSET) | CMD_TRANSMIT;
     while ((status = term_transmit_status(term0)) == STATUS_BUSY);
 
     term0->transm_command = CMD_ACK;
-    return (STATUS_OK == status) ? 0 : -1;
+    return STATUS_OK == status;
 }
 
-void term_puts(const char *str) {
-    char c;
+usize term_puts(const char *str) {
+    usize i = 0;
 
-    while ((c = *str++)) {
-        term_putchar(c);
+    if (NULL != str) {
+        while (*str) {
+            if (term_putchar(*str++)) {
+                ++i;
+            } else {
+                break;
+            }
+        }
     }
+
+    return i;
 }
 
-int term_getchar(void) {
+bool term_getchar(char *buf) {
     unsigned status = term_receive_status(term0);
 
     if (STATUS_READY != status) {
@@ -55,19 +63,18 @@ int term_getchar(void) {
     while ((status = term_receive_status(term0)) == STATUS_BUSY);
 
     if (STATUS_OK == status) {
-        // Receive command.
-        //
-        //  | OPAQUE | OPAQUE |  CHAR  | STATUS |
-        // 31       23       15        7        0
-        //
-        // 8 is the size in bits of the status field.
-        // 0xFF is the mask used to extract the first byte of a word.
-        int c = (int) ((term0->recv_status >> 8U) & 0xFFU);
+        if (NULL != buf) {
+            // Receive command.
+            //
+            //  | OPAQUE | OPAQUE |  CHAR  | STATUS |
+            // 31       23       15        7        0
+            *buf = (char) ((term0->recv_status >> BYTE_OFFSET) & BYTE_MASK);
+        }
 
         term0->recv_command = CMD_ACK;
-        return c;
+        return true;
     } else {
         term0->recv_command = CMD_ACK;
-        return -1;
+        return false;
     }
 }

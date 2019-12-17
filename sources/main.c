@@ -1,13 +1,14 @@
+#include <bikaya/primitive_types.h>
 #include <bikaya/printer.h>
 #include <bikaya/term.h>
 
 int main(void) {
-    int c;
+    char c;
 
-    while (1) {
+    while (true) {
         term_puts(">>> ");
 
-        for (c = term_getchar(); c >= 0 && c != '\n'; c = term_getchar()) {
+        while (term_getchar(&c) && c != '\n') {
             printer_putchar(c);
         }
 
