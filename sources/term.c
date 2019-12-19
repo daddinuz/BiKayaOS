@@ -78,3 +78,29 @@ bool term_getchar(char *buf) {
         return false;
     }
 }
+
+static bool is_newline(const char c) {
+    return '\n' == c;
+}
+
+usize term_gets(bool (*p)(char), char *buf, const usize n) {
+    usize i = 1;
+    bool stop = false;
+    p = (NULL == p) ? is_newline : p;
+
+    if (NULL == buf) {
+        for (char c; !stop && i < n && term_getchar(&c); ++i, stop = p(c));
+    } else {
+        for (char c; !stop && i < n && term_getchar(&c); ++i, stop = p(c)) {
+            *buf++ = c;
+        }
+
+        // if something has been read or the size of the buffer is one then
+        // guarantee that the string is null-terminated.
+        if (i > 1 || n == 1) {
+            *buf = '\0';
+        }
+    }
+
+    return i - 1;
+}
