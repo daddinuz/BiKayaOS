@@ -9,26 +9,34 @@
 
 static dtpreg_t *printer0 = (dtpreg_t *) DEV_REG_ADDR(IL_PRINTER, 0);
 
-int printer_putchar(const char c) {
+bool printer_putchar(const char character) {
     unsigned status;
 
     if (STATUS_READY != printer0->status) {
         return -1;
     }
 
-    printer0->data0 = c;
+    printer0->data0 = character;
     printer0->command = CMD_PRINT;
 
     while ((status = printer0->status) == STATUS_BUSY);
 
     printer0->command = CMD_ACK;
-    return (STATUS_READY == status) ? 0 : -1;
+    return STATUS_READY == status;
 }
 
-void printer_puts(const char *s) {
-    char c;
+usize printer_puts(const char *str) {
+    usize i = 0;
 
-    while ((c = *s++)) {
-        printer_putchar(c);
+    if (NULL != str) {
+        while (*str) {
+            if (printer_putchar(*str++)) {
+                ++i;
+            } else {
+                break;
+            }
+        }
     }
+
+    return i;
 }
