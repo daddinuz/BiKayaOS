@@ -55,9 +55,13 @@ emulators/*
 !emulators/config/uarm/.gitkeep
 !emulators/config/umps/.gitkeep
 
-# building
+# build
 build/uarm/debug/*
 !build/uarm/debug/.gitkeep
 
 build/umps/debug/*
 !build/umps/debug/.gitkeep
+
+# dist
+dist/*
+!dist/.gitkeep
