@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROJECT_PATH="$(pwd)"
+PROJECT_PATH="$(dirname `realpath "${BASH_SOURCE[0]}"`)"
 SCP_USER="${1}"
 SCP_HOST="${2}"
 SUBMIT_DIR="${3}"
