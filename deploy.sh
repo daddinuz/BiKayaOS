@@ -21,7 +21,7 @@ rm -rf "${PROJECT_PATH}/dist/*"
 
 # build the new dist
 tar -pczf "${TAR_GZ_FILE}"                                  \
-    --exclude="BiKayaOS/dist"                               \
+    --exclude="BiKayaOS/dist/*"                             \
     --exclude="BiKayaOS/.idea"                              \
     --exclude="BiKayaOS/.git"                               \
     --exclude="BiKayaOS/.gitkeep"                           \
