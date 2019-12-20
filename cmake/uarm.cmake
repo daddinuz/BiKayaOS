@@ -16,4 +16,4 @@ include(${PROJECT_PATH}/cmake/lib.cmake)
 # bin target
 set(BIN_NAME kernel)
 add_executable(${BIN_NAME} ${PROJECT_PATH}/sources/main.c)
-target_link_libraries(${BIN_NAME} PRIVATE ${ARCHIVE_NAME} ${UARM_PATH}/crtso.o ${UARM_PATH}/libuarm.o)
+target_link_libraries(${BIN_NAME} PRIVATE ${ARCHIVE_NAME} ${UARM_PATH}/libuarm.o ${UARM_PATH}/crtso.o ${UARM_PATH}/libdiv.o)
