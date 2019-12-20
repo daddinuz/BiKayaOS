@@ -59,7 +59,9 @@ extern bool term_getchar(char *buf);
  *
  * @attention if p is NULL, '\n' will be used as a termination character.
  *
- * @param p The predicate used to determinate if termination is reached.
+ * @param p The predicate used to determinate if termination is reached, which
+ *          means that p returns false as long as the termination character has
+ *          not been reached, true instead.
  * @param buf The buffer where the characters will be put after a successful read.
  * @param n The size of the buffer.
  * @return The number of characters read (in range [0, n-1]).
