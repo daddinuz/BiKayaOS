@@ -1,5 +1,5 @@
-#include <bikaya/system.h>
-#include <bikaya/term.h>
+#include <system.h>
+#include <term.h>
 
 #define STATUS_READY        1U
 #define STATUS_BUSY         3U
@@ -25,7 +25,7 @@ static inline unsigned term_receive_status(const termreg_t *const tp) {
 bool term_putchar(const char character) {
     unsigned status = term_transmit_status(term0);
 
-    if (STATUS_READY != status) {
+    if (STATUS_BUSY == status) {
         return false;
     }
 
@@ -40,12 +40,8 @@ usize term_puts(const char *str) {
     usize i = 0;
 
     if (NULL != str) {
-        while (*str) {
-            if (term_putchar(*str++)) {
-                ++i;
-            } else {
-                break;
-            }
+        while (*str && term_putchar(*(str++))) {
+            ++i;
         }
     }
 
@@ -89,9 +85,9 @@ usize term_gets(bool (*p)(char), char *buf, const usize n) {
     p = (NULL == p) ? is_newline : p;
 
     if (NULL == buf) {
-        for (char c; !stop && i < n && term_getchar(&c); ++i, stop = p(c));
+        for (char c = 0; !stop && i < n && term_getchar(&c); ++i, stop = p(c));
     } else {
-        for (char c; !stop && i < n && term_getchar(&c); ++i, stop = p(c)) {
+        for (char c = 0; !stop && i < n && term_getchar(&c); ++i, stop = p(c)) {
             *buf++ = c;
         }
 

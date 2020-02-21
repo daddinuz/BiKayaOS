@@ -1,7 +1,7 @@
-#include <bikaya/primitive_types.h>
-#include <bikaya/helpers.h>
-#include <bikaya/printer.h>
-#include <bikaya/term.h>
+#include <primitive_types.h>
+#include <helpers.h>
+#include <printer.h>
+#include <term.h>
 
 int main(void) {
     u32 n;

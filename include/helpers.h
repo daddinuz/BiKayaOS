@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bikaya/primitive_types.h>
+#include <primitive_types.h>
 
 /**
  * Takes a number n and converts its digits sequentially into their decimal

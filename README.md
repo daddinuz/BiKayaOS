@@ -74,11 +74,11 @@ cmake -DTARGET_ARCH=uMPS ../../..
 make
 ```
 
-## Setup default printers
+## Setup default terms and printers
 
 At the root of the project:
 
 ```bash
-touch emulators/config/uarm/printer0.uarm
-touch emulators/config/umps/printer0.umps
+touch emulators/config/uarm/{term0,printer0}.uarm
+touch emulators/config/umps/{term0,printer0}.umps
 ```

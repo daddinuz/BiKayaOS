@@ -1,5 +1,5 @@
-#include <bikaya/static_assert.h>
-#include <bikaya/primitive_types.h>
+#include <assertions.h>
+#include <primitive_types.h>
 
 static_assert(sizeof(u8) == 1, "sizeof(u8) != 1");
 static_assert(sizeof(i8) == 1, "sizeof(i8) != 1");

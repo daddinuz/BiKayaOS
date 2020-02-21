@@ -65,3 +65,7 @@ build/umps/debug/*
 # dist
 dist/*
 !dist/.gitkeep
+
+# target object files
+!sources/uarm/*.o
+!sources/umps/*.o

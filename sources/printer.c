@@ -1,5 +1,5 @@
-#include <bikaya/system.h>
-#include <bikaya/printer.h>
+#include <system.h>
+#include <printer.h>
 
 #define STATUS_READY        1U
 #define STATUS_BUSY         3U
@@ -12,8 +12,8 @@ static dtpreg_t *printer0 = (dtpreg_t *) DEV_REG_ADDR(IL_PRINTER, 0);
 bool printer_putchar(const char character) {
     unsigned status;
 
-    if (STATUS_READY != printer0->status) {
-        return -1;
+    if (STATUS_BUSY == printer0->status) {
+        return false;
     }
 
     printer0->data0 = character;
@@ -29,12 +29,8 @@ usize printer_puts(const char *str) {
     usize i = 0;
 
     if (NULL != str) {
-        while (*str) {
-            if (printer_putchar(*str++)) {
-                ++i;
-            } else {
-                break;
-            }
+        while (*str && printer_putchar(*(str++))) {
+            ++i;
         }
     }
 

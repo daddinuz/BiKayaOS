@@ -1,13 +1,13 @@
 #pragma once
 
 #if defined(TARGET_UARM)
-#include <libuarm.h>
-#include <arch.h>
-#include <uARMtypes.h>
+#include <uarm/libuarm.h>
+#include <uarm/arch.h>
+#include <uarm/uARMtypes.h>
 #elif defined(TARGET_UMPS)
-#include <libumps.h>
-#include <arch.h>
-#include <types.h>
+#include <umps/libumps.h>
+#include <umps/arch.h>
+#include <umps/types.h>
 #else
 #error "Unknown arch"
 #endif

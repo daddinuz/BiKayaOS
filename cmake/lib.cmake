@@ -8,5 +8,8 @@ add_library(${ARCHIVE_NAME}
   ${ARCHIVE_SOURCES}/term.c
   ${ARCHIVE_SOURCES}/printer.c
   ${ARCHIVE_SOURCES}/helpers.c
+  ${ARCHIVE_SOURCES}/assertions.c
   ${ARCHIVE_SOURCES}/primitive_types.c
+  ${ARCHIVE_SOURCES}/asl.c
+  ${ARCHIVE_SOURCES}/pcb.c
 )

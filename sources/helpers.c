@@ -1,5 +1,5 @@
-#include <bikaya/system.h>
-#include <bikaya/helpers.h>
+#include <system.h>
+#include <helpers.h>
 
 const u32 U32_TEN = 10U;
 

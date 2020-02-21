@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bikaya/primitive_types.h>
+#include <primitive_types.h>
 
 /**
  * Prints a single character to the default terminal.
