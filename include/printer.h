@@ -3,6 +3,16 @@
 #include <primitive_types.h>
 
 /**
+ * States of a printer device.
+ */
+enum PrinterStatus {
+    PRINTER_STATUS_ERR,
+    PRINTER_STATUS_BUSY,
+    PRINTER_STATUS_READY,
+    PRINTER_STATUS_ABSENT,
+};
+
+/**
  * Prints a single character to the default printer.
  * The character is intended to be a valid ASCII character (range [0, 127]),
  * internally the character is converted to an unsigned char.
@@ -12,7 +22,7 @@
  * @param character The character to be transmitted.
  * @return On success true, false otherwise.
  */
-extern bool printer_putchar(char character);
+extern bool printer_putchar(unsigned handle, char character);
 
 /**
  * Prints a string to the default printer.
@@ -26,4 +36,23 @@ extern bool printer_putchar(char character);
  * @param str The string to be transmitted.
  * @return The number of characters correctly transmitted.
  */
-extern usize printer_puts(const char *str);
+extern usize printer_puts(unsigned handle, const char *str);
+
+/**
+ * Gets the status of transmission.
+ *
+ * @attention passing an invalid handle is a checked runtime error.
+ *
+ * @param handle The number of printer device.
+ * @return The status of transmission.
+ */
+extern enum PrinterStatus printer_getTransmissionStatus(unsigned handle);
+
+/**
+ * Sends ack command to the transmitter of the specified printer.
+ *
+ * @attention passing an invalid handle is a checked runtime error.
+ * 
+ * @param handle The number of printer device.
+ */
+extern void printer_ackTransmission(unsigned handle);

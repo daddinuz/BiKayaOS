@@ -1,11 +1,16 @@
 #pragma once
 
+// null pointer
+#ifndef NULL
+#define NULL ((void *) 0)
+#endif
+
+// boolean type (since C99)
+typedef _Bool bool;
+
 // boolean consts
 #define true     1
 #define false    0
-
-// Since C99
-typedef _Bool bool;
 
 // 8-bits integer types
 typedef unsigned char u8;

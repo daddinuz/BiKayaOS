@@ -1,4 +1,3 @@
-#include <system.h>
 #include <helpers.h>
 
 const u32 U32_TEN = 10U;

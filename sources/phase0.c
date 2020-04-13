@@ -3,22 +3,34 @@
 #include <printer.h>
 #include <term.h>
 
+static bool put_char(const char c) {
+    return term_putchar(0, c);
+}
+
+static bool put_str(const char *const s) {
+    return term_puts(0, s);
+}
+
+static bool get_char(char *c) {
+    return term_getchar(0, c);
+}
+
 int main(void) {
     u32 n;
     char c;
-    bool s;
+    bool r;
 
     while (true) {
-        term_puts(">>> ");
+        put_str(">>> ");
 
         n = 0;
-        while ((s = term_getchar(&c)) && c != '\n' && (s = printer_putchar(c))) {
+        while ((r = get_char(&c)) && c != '\n' && (r = printer_putchar(0, c))) {
             ++n;
         }
 
-        printer_putchar('\n');
-        u32_to_base10(term_putchar, n);
-        term_puts((s) ? " characters correctly transmitted.\n" :
-                        " characters transmitted, errors occurred.\n");
+        printer_putchar(0, '\n');
+        u32_to_base10(put_char, n);
+        put_str((r) ? " characters correctly transmitted.\n" :
+                      " characters transmitted, errors occurred.\n");
     }
 }

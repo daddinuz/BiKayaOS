@@ -1,4 +1,4 @@
-add_definitions(-DTARGET_UARM=1)
+add_definitions(-DTARGET_UARM=1 -DUARM_MACHINE_COMPILING=1)
 
 set(UARM_INCLUDE "${PROJECT_PATH}/include/uarm")
 set(UARM_SOURCES "${PROJECT_PATH}/sources/uarm")

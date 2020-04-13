@@ -1,6 +1,18 @@
 #pragma once
 
 #include <primitive_types.h>
+#include <macros.h>
+#include <term.h>
+
+/**
+ * Prints to the default terminal a message with location.
+ *
+ * @attention msg must be a string literal.
+ *
+ * @param msg The massage to be printed.
+ */
+#define trace(msg)    \
+    term_puts(0, "[TRACE '" __FILE__ ":" str(__LINE__) "']: " msg "\n")
 
 /**
  * Takes a number n and converts its digits sequentially into their decimal

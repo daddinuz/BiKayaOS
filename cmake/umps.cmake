@@ -22,3 +22,4 @@ include(${PROJECT_PATH}/cmake/bin.cmake)
 
 add_custom_command(TARGET ${BIN_PHASE0} POST_BUILD COMMAND umps2-elf2umps -k ${BIN_PHASE0})
 add_custom_command(TARGET ${BIN_PHASE1} POST_BUILD COMMAND umps2-elf2umps -k ${BIN_PHASE1})
+add_custom_command(TARGET ${BIN_PHASE15} POST_BUILD COMMAND umps2-elf2umps -k ${BIN_PHASE15})
