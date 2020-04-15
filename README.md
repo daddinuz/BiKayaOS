@@ -52,7 +52,19 @@ make
 sudo make install
 ```
 
+## Setup default terms and printers
+
+At the root of the project:
+
+```bash
+touch emulators/config/uarm/{term0,printer0}.uarm
+touch emulators/config/umps/{term0,printer0}.umps
+```
+
 ## Building
+
+You can use the `run.sh` script to easily build and run, otherwise you can build manually following
+the instructions below.
 
 #### uARM targets
 
@@ -72,13 +84,4 @@ At the root of the project:
 cd build/umps/debug
 cmake -DTARGET_ARCH=uMPS ../../..
 make
-```
-
-## Setup default terms and printers
-
-At the root of the project:
-
-```bash
-touch emulators/config/uarm/{term0,printer0}.uarm
-touch emulators/config/umps/{term0,printer0}.umps
 ```
