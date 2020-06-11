@@ -32,7 +32,7 @@
  *
  */
 
-#include <const.h>
+#include <const_bikaya.h>
 #include <listx.h>
 
 #ifdef TARGET_UMPS
@@ -47,7 +47,8 @@
 #include <pcb.h>
 #include <asl.h>
 
-#define MAXSEM MAXPROC
+#define MAXPROC MAX_PROC_NO
+#define MAXSEM  MAXPROC
 
 #define MAX_PCB_PRIORITY     10
 #define MIN_PCB_PRIORITY     0

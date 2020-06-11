@@ -35,6 +35,7 @@
  * - MACHINE_WORD_SIZE             : self-explaining.
  * - MACHINE_DEVICE_PRINTER_NO     : number of printer devices that machine can handle.
  * - MACHINE_DEVICE_TERMINAL_NO    : number of terminal devices that machine can handle.
+ * - MACHINE_MAX_INT               : max value represantable by the machine that type int can reach.
  * - INTERRUPT_LINE_IPI            : interrupt line that indicates inter processor interrupts.
  * - INTERRUPT_LINE_CPU_TIMER      : interrupt line that indicates that the CPU timer caused the interruption.
  * - INTERRUPT_LINE_INTERVAL_TIMER : interrupt line that indicates that the interval timer caused the interruption.
@@ -43,7 +44,7 @@
  * - INTERRUPT_LINE_ETHERNET       : interrupt line that indicates that the ethernet caused the interruption.
  * - INTERRUPT_LINE_PRINTER        : interrupt line that indicates that the printer caused the interruption.
  * - INTERRUPT_LINE_TERMINAL       : interrupt line that indicates that the terminal caused the interruption.
- * - SYSNO_TERMINATE_PROCESS       : system call terminates process number.
+ * - INTERVAL_TIMER_MAX            : max value that interval timer can reach.
  */
 
 #if defined(TARGET_UARM)
@@ -77,6 +78,8 @@ typedef state_t cpustate_t;
 #define MACHINE_DEVICE_PRINTER_NO     ((unsigned) N_DEV_PER_IL)
 #define MACHINE_DEVICE_TERMINAL_NO    ((unsigned) N_DEV_PER_IL)
 
+#define MACHINE_MAX_INT               (0x7FFFFFFF)
+
 #define INTERRUPT_LINE_IPI            IL_IPI
 #define INTERRUPT_LINE_CPU_TIMER      IL_CPUTIMER
 #define INTERRUPT_LINE_INTERVAL_TIMER IL_TIMER
@@ -86,7 +89,7 @@ typedef state_t cpustate_t;
 #define INTERRUPT_LINE_PRINTER        IL_PRINTER
 #define INTERRUPT_LINE_TERMINAL       IL_TERMINAL
 
-#define SYSNO_TERMINATE_PROCESS       3
+#define INTERVAL_TIMER_MAX            (0xFFFFFFFFU)
 
 #elif defined(TARGET_UMPS)
 
@@ -113,12 +116,14 @@ typedef state_t cpustate_t;
 #define MACHINE_NEW_TLB_MGMT_AREA     ((cpustate_t *) 0x200001A4)
 
 #define MACHINE_RAM_LIMIT             ((unsigned) ((*((unsigned *) BUS_REG_RAM_BASE)) + (*((unsigned *) BUS_REG_RAM_SIZE))))
-#define MACHINE_STACK_SIZE            1024U
+#define MACHINE_STACK_SIZE            (1024U)
 
 #define MACHINE_WORD_SIZE             ((unsigned) WORD_SIZE)
 
 #define MACHINE_DEVICE_PRINTER_NO     ((unsigned) N_DEV_PER_IL)
 #define MACHINE_DEVICE_TERMINAL_NO    ((unsigned) N_DEV_PER_IL)
+
+#define MACHINE_MAX_INT               (0x7FFFFFFF)
 
 #define INTERRUPT_LINE_IPI            IL_IPI
 #define INTERRUPT_LINE_CPU_TIMER      IL_CPUTIMER
@@ -129,7 +134,7 @@ typedef state_t cpustate_t;
 #define INTERRUPT_LINE_PRINTER        IL_PRINTER
 #define INTERRUPT_LINE_TERMINAL       IL_TERMINAL
 
-#define SYSNO_TERMINATE_PROCESS       3
+#define INTERVAL_TIMER_MAX            (0xFFFFFFFFU)
 
 #else
 #error "Unknown target architecture"
@@ -138,6 +143,12 @@ typedef state_t cpustate_t;
 #include <primitive_types.h>
 
 #define noreturn _Noreturn
+
+struct TimeInfo {
+    ticks_t *userTime;
+    ticks_t *kernelTime;
+    ticks_t *wallclockTime;
+};
 
 /**
  * Boots the kernel, disables all interrupts and disables virtual memory.
@@ -209,23 +220,33 @@ extern ticks_t machine_getClockResolution(void);
 extern ticks_t machine_getIntervalTimer(void);
 
 /**
+ * Returns the current value of the timer and then resets it to INTERVAL_TIMER_MAX.
+ */
+extern ticks_t machine_resetIntervalTimer(void);
+
+/**
  * Interval timer setter.
  */
 extern void machine_setIntervalTimer(ticks_t ticks);
+
+/**
+ * Time of the day getter.
+ */
+extern ticks_t machine_getTODLow(void);
 
 /* CPU state interface. */
 
 /// CPU modes
 enum CPUMode {
-    CPU_MODE_KERNEL,
+    CPU_MODE_KERNEL = 0,
     CPU_MODE_USER,
 };
 
 struct StateConfig {
     enum CPUMode mode;
-    bool virtualMemoryEnabled: 1;
-    bool fastInterruptsEnabled: 1;
-    bool interruptsEnabled: 1;
+    bool virtualMemoryEnabled;
+    bool fastInterruptsEnabled;
+    bool interruptsEnabled;
 };
 
 /**
@@ -234,14 +255,6 @@ struct StateConfig {
  * @attention (NULL == self) is a checked runtime error.
  */
 extern void state_update(cpustate_t *self, struct StateConfig config);
-
-/**
- * Sets the CPU state to kernel mode, all interrupts disabled
- * and virtual address translation off.
- *
- * @attention (NULL == self) is a checked runtime error.
- */
-extern void state_clear(cpustate_t *self);
 
 /**
  *  Gets state's program counter reference.
@@ -265,9 +278,51 @@ extern memaddr state_getStackPointer(const cpustate_t *self);
 extern void state_setStackPointer(cpustate_t *self, memaddr sp);
 
 /**
- * Returns system call identifier.
+ * Returns system call identifier. The state parameter is
+ * supposed to be the one of a process whose last op was a syscall.
  *
- * @attention Calling this function outside the sistem call handler is UB.
+ * @param self The state of the process that has called the syscall.
+ * @attention If the last op of the processor state was not a syscall, it is UB.
  * @attention (NULL == self) is a checked runtime error.
  */
 extern sysno_t state_getSysNo(const cpustate_t *self);
+
+/**
+ * Returns the first argument of the syscall. The state parameter is
+ * supposed to be the one of a process whose last op was a syscall.
+ *
+ * @param self The state of the process that has called the syscall.
+ * @attention If the last op of the processor state was not a syscall, it is UB.
+ * @attention (NULL == self) is a checked runtime error.
+ */
+extern unsigned state_getSysArg1(const cpustate_t *self);
+
+/**
+ * Returns the second argument of the syscall. The state parameter is
+ * supposed to be the one of a process whose last op was a syscall.
+ *
+ * @param self The state of the process that has called the syscall.
+ * @attention If the last op of the processor state was not a syscall, it is UB.
+ * @attention (NULL == self) is a checked runtime error.
+ */
+extern unsigned state_getSysArg2(const cpustate_t *self);
+
+/**
+ * Returns the third argument of the syscall. The state parameter is
+ * supposed to be the one of a process whose last op was a syscall.
+ *
+ * @param self The state of the process that has called the syscall.
+ * @attention If the last op of the processor state was not a syscall, it is UB.
+ * @attention (NULL == self) is a checked runtime error.
+ */
+extern unsigned state_getSysArg3(const cpustate_t *self);
+
+/**
+ * Sets the return value of a system call. 
+ *
+ * @param self The state of the process that has called the syscall.
+ * @attention Calling state_getSysNo after this function is UB.
+ * @attention If the last op of the processor state was not a syscall, it is UB.
+ * @attention (NULL == self) is a checked runtime error.
+ */
+extern void state_setSysReturn(cpustate_t *self, int value);

@@ -2,6 +2,8 @@
 #include <helpers.h>
 #include <printer.h>
 #include <term.h>
+#include <core.h>
+#include <scheduler.h>
 
 static bool put_char(const char c) {
     return term_putchar(0, c);
@@ -15,7 +17,7 @@ static bool get_char(char *c) {
     return term_getchar(0, c);
 }
 
-int main(void) {
+static void loop(void) { 
     u32 n;
     char c;
     bool r;
@@ -33,4 +35,13 @@ int main(void) {
         put_str((r) ? " characters correctly transmitted.\n" :
                       " characters transmitted, errors occurred.\n");
     }
+
+    SYSCALL(TERMINATEPROCESS, 0, 0, 0);
+}
+
+int main(void) {
+    core_boot();
+
+    scheduler_schedule(loop, 1);
+    scheduler_dispatch();
 }

@@ -1,8 +1,18 @@
 #include <assertions.h>
+#include <const_bikaya.h>
 #include <core.h>
 #include <term.h>
 
 // NOTE: keep this portion of code free of arch-specific code!
+
+// High level states of a terminal device.
+enum TermStatus {
+    TERM_STATUS_OK,
+    TERM_STATUS_ERR,
+    TERM_STATUS_BUSY,
+    TERM_STATUS_READY,
+    TERM_STATUS_ABSENT,
+};
 
 static enum TermStatus transmit(unsigned handle, char c);
 static enum TermStatus receive(unsigned handle, char *buf);
@@ -13,23 +23,16 @@ static bool isNewline(const char c) {
 
 bool term_putchar(const unsigned handle, const char character) {
     debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
-    enum TermStatus status;
 
-    // busy waiting for ready status.
-    while ((status = term_getTransmissionStatus(handle)) != TERM_STATUS_READY) {
-        if (TERM_STATUS_ABSENT == status) {
+    switch(transmit(handle, character)) {
+        case TERM_STATUS_OK:
+            /* FALLTHROUGH */
+        case TERM_STATUS_READY:
+            return true;
+
+        default:
             return false;
-        }
     }
-
-    // send transmit command.
-    status = transmit(handle, character);
-
-    // ack transmission regardless of outcome.
-    term_ackTransmission(handle);
-
-    // check if the operation was successful.
-    return TERM_STATUS_OK == status;
 }
 
 usize term_puts(const unsigned handle, const char *str) {
@@ -47,23 +50,16 @@ usize term_puts(const unsigned handle, const char *str) {
 
 bool term_getchar(const unsigned handle, char *const buf) {
     debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
-    enum TermStatus status;
 
-    // busy waiting for ready status.
-    while ((status = term_getReceptionStatus(handle)) != TERM_STATUS_READY) {
-        if (TERM_STATUS_ABSENT == status) {
+    switch(receive(handle, buf)) {
+        case TERM_STATUS_OK:
+            /* FALLTHROUGH */
+        case TERM_STATUS_READY:
+            return true;
+
+        default:
             return false;
-        }
     }
-
-    // send receive command.
-    status = receive(handle, buf);
-
-    // ack reception regardless of outcome.
-    term_ackReception(handle);
-
-    // check if the operation was successful.
-    return TERM_STATUS_OK == status;
 }
 
 usize term_gets(const unsigned handle, bool (*p)(char), char *buf, const usize n) {
@@ -123,69 +119,28 @@ usize term_gets(const unsigned handle, bool (*p)(char), char *buf, const usize n
 #define BYTE_OFFSET          8U
 #define BYTE_MASK            0xFFU
 
-static termreg_t *getRegister(unsigned handle);
 static enum TermStatus decodeStatus(unsigned rawStatus);
-
-enum TermStatus term_getTransmissionStatus(const unsigned handle) {
-    debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
-    const termreg_t *const term = getRegister(handle);
-    return decodeStatus(term->transm_status);
-}
-
-void term_ackTransmission(const unsigned handle) {
-    debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
-    termreg_t *const term = getRegister(handle);
-    term->transm_command = CMD_ACK;
-}
-
-enum TermStatus term_getReceptionStatus(const unsigned handle) {
-    debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
-    const termreg_t *const term = getRegister(handle);
-    return decodeStatus(term->recv_status);
-}
-
-void term_ackReception(const unsigned handle) {
-    debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
-    termreg_t *const term = getRegister(handle);
-    term->recv_command = CMD_ACK;
-}
-
-static termreg_t *getRegister(const unsigned handle) {
-    debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
-    return (termreg_t *) DEV_REG_ADDR(IL_TERMINAL, handle);
-}
 
 static enum TermStatus transmit(const unsigned handle, const char c) {
     debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
 
-    termreg_t *const term = getRegister(handle);
-    enum TermStatus status;
+    unsigned command = c;
+    command <<= BYTE_OFFSET;
+    command |= CMD_TRANSMIT;
 
-    // send char to terminal.
-    term->transm_command = (((unsigned) c) << BYTE_OFFSET) | CMD_TRANSMIT;
-
-    // wait for ok or err.
-    while ((status = term_getTransmissionStatus(handle)) == TERM_STATUS_BUSY) {}
-
-    return status;
+    return decodeStatus((unsigned) SYSCALL(WAITIO, command, DEV_REG_ADDR(INTERRUPT_LINE_TERMINAL, handle), 0));
 }
 
 static enum TermStatus receive(const unsigned handle, char *const buf) {
     debug_assert(handle < MACHINE_DEVICE_TERMINAL_NO);
 
-    termreg_t *const term = getRegister(handle);
-    enum TermStatus status;
-
-    // read char from terminal.
-    term->recv_command = CMD_RECEIVE;
-
-    // wait for ok or err.
-    while ((status = term_getReceptionStatus(handle)) == TERM_STATUS_BUSY) {}
+    const unsigned rawStatus = (unsigned) SYSCALL(WAITIO, CMD_RECEIVE, DEV_REG_ADDR(INTERRUPT_LINE_TERMINAL, handle), 1);
+    const enum TermStatus status = decodeStatus(rawStatus);
 
     if (TERM_STATUS_OK == status && NULL != buf) {
         //  | OPAQUE | OPAQUE |  CHAR  | STATUS |
         // 31       23       15        7        0
-        *buf = (char) ((term->recv_status >> BYTE_OFFSET) & BYTE_MASK);
+        *buf = (char) ((rawStatus >> BYTE_OFFSET) & BYTE_MASK);
     }
 
     return status;

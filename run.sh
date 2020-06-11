@@ -23,8 +23,8 @@ Targets:
     --all,  --all=action        select all targets and action
 
 Actions:
-    b                           build for the selected architecture
-    r                           run the emulator of the selected architecture
+    b, build                    build for the selected architecture
+    r, run                      run the emulator of the selected architecture
 
     If the action is not specified it builds and runs the selected target.
 
@@ -81,11 +81,11 @@ case "${OPTION}" in
        run_uarm
        ;;
 
-    "--uarm=b")
+    "--uarm=b" | "--uarm=build")
        build_uarm
        ;;
 
-    "--uarm=r")
+    "--uarm=r" | "--uarm=run")
        run_uarm
        ;;
 
@@ -94,11 +94,11 @@ case "${OPTION}" in
        run_umps
        ;;
 
-    "--umps=b")
+    "--umps=b" | "--umps=build")
        build_umps
        ;;
 
-    "--umps=r")
+    "--umps=r" | "--umps=run")
        run_umps
        ;;
 
@@ -109,12 +109,12 @@ case "${OPTION}" in
       run_umps
       ;;
 
-    "--all=b")
+    "--all=b" | "--all=build")
       build_uarm
       build_umps
       ;;
 
-    "--all=r")
+    "--all=r" | "--all=run")
       run_uarm
       run_umps
       ;;

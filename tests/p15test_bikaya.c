@@ -1,4 +1,3 @@
-#include "const.h"
 #include "listx.h"
 #ifdef TARGET_UMPS
 #include "umps/libumps.h"

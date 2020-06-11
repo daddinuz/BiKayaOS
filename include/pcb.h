@@ -6,22 +6,38 @@
 
 // Process Control Block (PCB) data structure
 typedef struct pcb_t {
+    // processor state
+    cpustate_t p_s;
+
     // process queue fields
     struct list_head p_next;
 
     // process tree fields
-    struct pcb_t *p_parent;
     struct list_head p_child, p_sib;
+    struct pcb_t *p_parent;
 
-    // processor state
-    cpustate_t p_s;
-
-    // process priority
-    int original_priority;
-    int priority;
+    // custom handlers
+    cpustate_t *sysbkHandler;
+    cpustate_t *sysbkOldArea;
+    cpustate_t *TLBHandler;
+    cpustate_t *TLBOldArea;
+    cpustate_t *trapHandler;
+    cpustate_t *trapOldArea;
 
     // key of the semaphore on which the process is eventually blocked
     int *p_semkey;
+
+    // priority defined when creating a process
+    int original_priority;
+
+    // the current priority of the process: original_priority + aging
+    int priority;
+
+    // process execution times
+    ticks_t start_time;             // TODLow when process runs for the first time; used to calculate the wallclock time
+    ticks_t user_time;              // self-explained
+    ticks_t kernel_time;            // self-explained
+    ticks_t latest_handler_time;    // sample of timer at the moment of the termination of the last call to a handler
 } pcb_t;
 
 // free list handling functions
@@ -48,7 +64,8 @@ struct pcb_t *outChild(struct pcb_t *child);
  * The PID is unique and is > 0.
  *
  * @attention (NULL == p) is a checked runtime error.
+ * @attention p must be a valid pcb.
  *
  * @return the PID of the specified pcb.
  */
-usize getpid(const struct pcb_t *p);
+usize getPid(const struct pcb_t *p);

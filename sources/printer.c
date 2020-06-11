@@ -1,30 +1,30 @@
 #include <assertions.h>
+#include <const_bikaya.h>
 #include <core.h>
 #include <printer.h>
 
 // NOTE: keep this portion of code free of arch-specified code!
 
+// High level states of a printer device.
+enum PrinterStatus {
+    PRINTER_STATUS_ERR,
+    PRINTER_STATUS_BUSY,
+    PRINTER_STATUS_READY,
+    PRINTER_STATUS_ABSENT,
+};
+
 static enum PrinterStatus transmit(unsigned handle, char character);
 
 bool printer_putchar(const unsigned handle, const char character) {
     debug_assert(handle < MACHINE_DEVICE_PRINTER_NO);
-    enum PrinterStatus status;
 
-    // busy waiting for ready status.
-    while ((status = printer_getTransmissionStatus(handle)) != PRINTER_STATUS_READY) {
-        if (PRINTER_STATUS_ABSENT == status) {
+    switch(transmit(handle, character)) {
+        case PRINTER_STATUS_READY:
+            return true;
+
+        default:
             return false;
-        }
     }
-
-    // send transmit command.
-    status = transmit(handle, character);
-
-    // ack transmission regardless of outcome.
-    printer_ackTransmission(handle);
-
-    // check if the operation was successful.
-    return PRINTER_STATUS_READY == status;
 }
 
 usize printer_puts(const unsigned handle, const char *str) {
@@ -68,40 +68,14 @@ usize printer_puts(const unsigned handle, const char *str) {
 #define CMD_ACK              1U
 #define CMD_PRINT            2U
 
-static dtpreg_t *getRegister(unsigned handle);
 static enum PrinterStatus decodeStatus(unsigned rawStatus);
-
-enum PrinterStatus printer_getTransmissionStatus(const unsigned handle) {
-    debug_assert(handle < MACHINE_DEVICE_PRINTER_NO);
-    const dtpreg_t *const p = getRegister(handle);
-    return decodeStatus(p->status);
-}
-
-void printer_ackTransmission(const unsigned handle) {
-    debug_assert(handle < MACHINE_DEVICE_PRINTER_NO);
-    dtpreg_t *const p = getRegister(handle);
-    p->command = CMD_ACK;
-}
-
-static dtpreg_t *getRegister(const unsigned handle) {
-    debug_assert(handle < MACHINE_DEVICE_PRINTER_NO);
-    return (dtpreg_t *) DEV_REG_ADDR(INTERRUPT_LINE_PRINTER, handle);
-}
 
 static enum PrinterStatus transmit(const unsigned handle, const char character) {
     debug_assert(handle < MACHINE_DEVICE_PRINTER_NO);
+    dtpreg_t *const printerRegister = (dtpreg_t *) DEV_REG_ADDR(INTERRUPT_LINE_PRINTER, handle);
 
-    dtpreg_t *const p = getRegister(handle);
-    enum PrinterStatus status;
-
-    // send char to printer.
-    p->data0 = character;
-    p->command = CMD_PRINT;
-
-    // busy waiting.
-    while ((status = printer_getTransmissionStatus(handle)) == PRINTER_STATUS_BUSY) {}
-
-    return status;
+    printerRegister->data0 = character;
+    return decodeStatus((unsigned) SYSCALL(WAITIO, CMD_PRINT, (memaddr) printerRegister, 0));
 }
 
 static enum PrinterStatus decodeStatus(const unsigned rawStatus) {

@@ -1,11 +1,11 @@
 #include <primitive_types.h>
 #include <assertions.h>
-#include <const.h>
+#include <const_bikaya.h>
 #include <listx.h>
 #include <pcb.h>
 #include <asl.h>
 
-static struct semd_t semd_table[MAXPROC];
+static struct semd_t semd_table[MAX_SEM_NO];
 static struct list_head semd_free;
 static struct list_head semd_busy;
 
@@ -13,7 +13,7 @@ void initASL(void) {
     INIT_LIST_HEAD(&semd_free);
     INIT_LIST_HEAD(&semd_busy);
 
-    const struct semd_t *const end = &semd_table[MAXPROC];
+    const struct semd_t *const end = &semd_table[MAX_SEM_NO];
     for (struct semd_t *cur = &semd_table[0]; end > cur; ++cur) {
         mkEmptyProcQ(&cur->s_procQ);
         list_add(&cur->s_next, &semd_free);
@@ -47,11 +47,13 @@ int insertBlocked(int *const key, struct pcb_t *const p) {
         } else {
             // we have at least one available sem.
 
-            struct list_head *s_node = list_next(&semd_free);
+            struct list_head *const s_node = list_next(&semd_free);
             assert(NULL != s_node);
 
             // removing the sem from semd_free.
             list_del(s_node);
+            INIT_LIST_HEAD(s_node);
+
             // adding the sem from semd_busy.
             list_add_tail(s_node, &semd_busy);
 
@@ -63,7 +65,7 @@ int insertBlocked(int *const key, struct pcb_t *const p) {
     // ensure that the proc was not already associated to a sem.
     debug_assert(NULL == p->p_semkey);
     p->p_semkey = key;
-    insertProcQ(&s->s_procQ, p);
+    list_add_tail(&p->p_next, &s->s_procQ);
     return 0;
 }
 
@@ -84,6 +86,7 @@ static bool tryFreeSemd(struct semd_t *const s) {
     if (emptyProcQ(&s->s_procQ)) {
         // empty proc queue -> move sem back from semd_busy to semd_free.
         list_del(&s->s_next);
+        INIT_LIST_HEAD(&s->s_next);
         list_add_tail(&s->s_next, &semd_free);
         return true;
     }
@@ -119,8 +122,9 @@ struct pcb_t *outBlocked(struct pcb_t *const p) {
         assert(NULL != s);
 
         // remove the proc from the queue and clean its semkey before return.
-        list_del(&p->p_next);
         p->p_semkey = NULL;
+        list_del(&p->p_next);
+        INIT_LIST_HEAD(&p->p_next);
 
         tryFreeSemd(s);
         return p;

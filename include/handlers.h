@@ -19,6 +19,15 @@ extern void handlers_interruptHandler(void);
 extern void handlers_sysbkHandler(void);
 
 /**
- * Handles exceptions different from sysbk and interrupt, causing kernel PANIC.
+ * Calls a custom handler for TLBs.
+ *
+ * @attention If no custom handler is defined for the current process, this causes a kernel PANIC. 
  */
-extern void handlers_unexpectedHandler(void);
+extern void handlers_TLBHandler(void);
+
+/**
+ * Calls a custom handler for traps.
+ *
+ * @attention If no custom handler is defined for the current process, this causes a kernel PANIC. 
+ */
+extern void handlers_trapHandler(void);

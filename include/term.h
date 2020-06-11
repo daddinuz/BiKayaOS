@@ -3,17 +3,6 @@
 #include <primitive_types.h>
 
 /**
- * States of a terminal device.
- */
-enum TermStatus {
-    TERM_STATUS_OK,
-    TERM_STATUS_ERR,
-    TERM_STATUS_BUSY,
-    TERM_STATUS_READY,
-    TERM_STATUS_ABSENT,
-};
-
-/**
  * Prints a single character.
  * The character is intended to be a valid ASCII character (range [0, 127]),
  * internally the character is converted to an unsigned char.
@@ -42,25 +31,6 @@ extern bool term_putchar(unsigned handle, char character);
  * @return The number of characters correctly transmitted.
  */
 extern usize term_puts(unsigned handle, const char *str);
-
-/**
- * Gets the status of transmission.
- *
- * @attention passing an invalid handle is a checked runtime error.
- *
- * @param handle The terminal handle.
- * @return The status of transmission.
- */
-extern enum TermStatus term_getTransmissionStatus(unsigned handle);
-
-/**
- * Sends ack command to the transmitter of the specified terminal.
- *
- * @attention passing an invalid handle is a checked runtime error.
- *
- * @param handle The terminal handle.
- */
-extern void term_ackTransmission(unsigned handle);
 
 /**
  * Reads a character from the terminal and stores it into the specified buffer.
@@ -105,22 +75,3 @@ extern bool term_getchar(unsigned handle, char *buf);
  * @return The number of characters read (in range [0, n-1]).
  */
 extern usize term_gets(unsigned handle, bool (*p)(char), char *buf, usize n);
-
-/**
- * Gets the status of reception.
- *
- * @attention passing an invalid handle is a checked runtime error.
- *
- * @param handle The terminal handle.
- * @return The status of reception.
- */
-extern enum TermStatus term_getReceptionStatus(unsigned handle);
-
-/**
- * Sends ack command to the receiver of the specified terminal.
- *
- * @attention passing an invalid handle is a checked runtime error.
- *
- * @param handle The terminal handle.
- */
-extern void term_ackReception(unsigned handle);

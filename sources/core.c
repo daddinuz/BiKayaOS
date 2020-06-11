@@ -1,6 +1,6 @@
 #include <assertions.h>
 #include <handlers.h>
-#include <pcb.h>
+#include <types_bikaya.h>
 #include <core.h>
 
 // NOTE: keep this portion of code free of arch-specific code!
@@ -23,7 +23,7 @@ static void registerHandler(cpustate_t *const state, void (*const handler)(void)
     debug_assert(NULL != state);
     debug_assert(NULL != handler);
 
-    state_clear(state);
+    state_update(state, (struct StateConfig) { .mode=CPU_MODE_KERNEL });
     *state_programCounter(state) = (memaddr) handler;
     state_setStackPointer(state, MACHINE_RAM_LIMIT);
 }
@@ -31,25 +31,15 @@ static void registerHandler(cpustate_t *const state, void (*const handler)(void)
 /**
  * Initializes the machine registering handlers and initializing pcbs, etc...
  */
-static void setup(void) {
+void core_boot(void) {
     // register handlers
     registerHandler(MACHINE_NEW_SYSBK_AREA, handlers_sysbkHandler);
     registerHandler(MACHINE_NEW_INTERRUPT_AREA, handlers_interruptHandler);
-    registerHandler(MACHINE_NEW_PRGM_TRAP_AREA, handlers_unexpectedHandler);
-    registerHandler(MACHINE_NEW_TLB_MGMT_AREA, handlers_unexpectedHandler);
+    registerHandler(MACHINE_NEW_PRGM_TRAP_AREA, handlers_trapHandler);
+    registerHandler(MACHINE_NEW_TLB_MGMT_AREA, handlers_TLBHandler);
 
-    // initialize pcbs
     initPcbs();
-}
-
-void core_boot(void) {
-    cpustate_t state;
-
-    core_storeState(&state);
-    state_clear(&state);
-    *state_programCounter(&state) = (memaddr) setup;
-
-    core_loadState(&state);
+    initASL();
 }
 
 /**
@@ -92,7 +82,7 @@ void core_panic(void) {
 
 unsigned machine_getInterruptLine(void) {
 #if defined(TARGET_UARM)
-#define CAUSE_IP(il)    (1 << ((il) + 24))
+#define CAUSE_IP(il)    (1U << ((il) + 24))
 #endif
 
     const unsigned cause = getCAUSE();
@@ -127,8 +117,18 @@ ticks_t machine_getIntervalTimer(void) {
     return *((ticks_t *) BUS_REG_TIMER);
 }
 
+ticks_t machine_resetIntervalTimer(void) {
+    const ticks_t timeLeft = machine_getIntervalTimer();
+    machine_setIntervalTimer(INTERVAL_TIMER_MAX);
+    return timeLeft;
+}   
+
 void machine_setIntervalTimer(const ticks_t ticks) {
     *((ticks_t *) BUS_REG_TIMER) = ticks;
+}
+
+ticks_t machine_getTODLow(void) {
+    return *((ticks_t *) BUS_REG_TOD_LO);
 }
 
 void state_update(cpustate_t *const self, const struct StateConfig config) {
@@ -150,11 +150,6 @@ void state_update(cpustate_t *const self, const struct StateConfig config) {
     setVirtualMemory(self, config.virtualMemoryEnabled);
     setFastInterrupts(self, config.fastInterruptsEnabled);
     setInterrupts(self, config.interruptsEnabled);
-}
-
-void state_clear(cpustate_t *const self) {
-    debug_assert(NULL != self);
-    state_update(self, (struct StateConfig) { .mode=CPU_MODE_KERNEL });
 }
 
 /**
@@ -207,6 +202,50 @@ sysno_t state_getSysNo(const cpustate_t *const self) {
     return self->a1;
 #elif defined(TARGET_UMPS)
     return self->reg_a0;
+#else
+#error "Unknown target architecture"
+#endif
+}
+
+unsigned state_getSysArg1(const cpustate_t *const self) { 
+    debug_assert(NULL != self);
+#if defined(TARGET_UARM)
+    return self->a2;
+#elif defined(TARGET_UMPS)
+    return self->reg_a1;
+#else
+#error "Unknown target architecture"
+#endif
+}
+
+unsigned state_getSysArg2(const cpustate_t *const self) { 
+    debug_assert(NULL != self);
+#if defined(TARGET_UARM)
+    return self->a3;
+#elif defined(TARGET_UMPS)
+    return self->reg_a2;
+#else
+#error "Unknown target architecture"
+#endif
+}
+
+unsigned state_getSysArg3(const cpustate_t *const self) { 
+    debug_assert(NULL != self);
+#if defined(TARGET_UARM)
+    return self->a4;
+#elif defined(TARGET_UMPS)
+    return self->reg_a3;
+#else
+#error "Unknown target architecture"
+#endif
+}
+
+void state_setSysReturn(cpustate_t *const self, const int value) {
+    debug_assert(NULL != self);
+#if defined(TARGET_UARM)
+    self->a1 = (unsigned) value;
+#elif defined(TARGET_UMPS)
+    self->reg_v0 = (unsigned) value;
 #else
 #error "Unknown target architecture"
 #endif
